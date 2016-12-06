@@ -1,5 +1,4 @@
 {-# LANGUAGE NamedFieldPuns #-}
-module Day1 where
 {-
     --- Day 1: No Time for a Taxicab ---
 
@@ -29,22 +28,27 @@ data Direction = L | R
                  deriving (Eq, Show, Read)
 
 data Pose = Pose { position :: !(Point Integer)
-                 , heading  :: !Heading
-                 }
+                 , heading  :: !Heading }
+                 deriving (Eq, Show)
 
 data Move = Move { turn :: !Direction
-                 , dist :: !Integer
-                 }
+                 , dist :: !Integer }
+                 deriving (Eq, Show)
 
-move :: Move -> Pose -> Pose
-move Move { turn, dist } Pose { position = (x, y), heading } =
+instance Read Move where
+    readsPrec _ ('L':rest) = [(Move { turn = L, dist = read rest }, "")]
+    readsPrec _ ('R':rest) = [(Move { turn = R, dist = read rest }, "")]
+    readsPrec _ _          = []
+
+move :: Pose -> Move -> Pose
+move Pose { position = (x, y), heading } Move { turn, dist } =
         Pose { position = position', heading = heading' }
     where heading' = rotate turn heading
           position' = case heading' of
               North -> (x, y + dist)
               South -> (x, y - dist)
-              East -> (x - dist, y)
-              West -> (x + dist, y)
+              East -> (x + dist, y)
+              West -> (x - dist, y)
 
 rotate :: Direction -> Heading -> Heading
 rotate R West = North
@@ -52,7 +56,17 @@ rotate R h = succ h
 rotate L North = West
 rotate L h = pred h
 
+-- | Compute the "taxicab distance" between a position and the origin
+taxiDist :: Num a => Point a -> a
+taxiDist (x, y) = abs x + abs y
 
--- | Compute the "taxicab distance" between two vectors `p` and `q`.
-taxiDist :: Num a => Point a -> Point a -> a
-taxiDist (px, py) (qx, qy) = abs (px - qx) + abs (py - qy)
+main :: IO ()
+main = do
+    string <- getLine
+    (print . taxiDist . position) .
+        foldl move initial $
+        (read . takeWhile notComma) <$> words string
+    where initial = Pose { position = (0, 0), heading = North }
+          notComma = (',' /= )
+        --   moveFromStr ('R':xs) = Move { turn = R, dist = read xs}
+        --   moveFromStr ('L':xs) = Move { turn = L, dist = read xs}
