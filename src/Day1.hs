@@ -40,15 +40,29 @@ instance Read Move where
     readsPrec _ ('R':rest) = [(Move { turn = R, dist = read rest }, "")]
     readsPrec _ _          = []
 
+-- | Returns the `Pose` at the end of a `Move`
 move :: Pose -> Move -> Pose
 move Pose { position = (x, y), heading } Move { turn, dist } =
-        Pose { position = position', heading = heading' }
-    where heading' = rotate turn heading
-          position' = case heading' of
-              North -> (x, y + dist)
-              South -> (x, y - dist)
-              East -> (x + dist, y)
-              West -> (x - dist, y)
+    let heading' = rotate turn heading
+        position' = case heading' of
+          North -> (x, y + dist)
+          South -> (x, y - dist)
+          East  -> (x + dist, y)
+          West  -> (x - dist, y)
+    in Pose { position = position', heading = heading' }
+
+
+-- | Returns the list of all `Pose`s traversed by a `Move`
+steps :: Pose -> Move -> [Pose]
+steps Pose { position = (x, y), heading } Move { turn, dist } =
+    let heading' = rotate turn heading
+        step i = case heading' of
+            North -> (x, y + i)
+            South -> (x, y - i)
+            East  -> (x + i, y)
+            West  -> (x - i, y)
+    in (\x -> Pose { position = x, heading = heading'}) <$>
+       [ step i | i <- [1..dist] ]
 
 rotate :: Direction -> Heading -> Heading
 rotate R West = North
