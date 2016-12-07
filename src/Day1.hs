@@ -20,6 +20,7 @@ module Day1 where
 
 -}
 import Data.List
+import Data.Monoid
 import qualified Data.Set as Set
 
 type Point a = (a, a)
@@ -43,28 +44,26 @@ instance Read Move where
     readsPrec _ ('R':rest) = [(Move { turn = R, dist = read rest }, "")]
     readsPrec _ _          = []
 
-step :: (Num a) => Heading -> Point a -> a -> Point a
-step heading (x, y) dist = case heading of
-    North -> (x, y + dist)
-    South -> (x, y - dist)
-    East  -> (x + dist, y)
-    West  -> (x - dist, y)
-
 -- | Returns the `Pose` at the end of a `Move`
-move :: Pose -> Move -> Pose
-move Pose { position, heading } Move { turn, dist } =
-    let heading' = rotate turn heading
-    in Pose { position = step heading' position dist, heading = heading' }
+-- move :: Pose -> Move -> Pose
+-- move Pose { position, heading } Move { turn, dist } =
+--     let heading' = rotate turn heading
+--     in Pose { position = step heading' position dist, heading = heading' }
 
 -- | Returns the list of all `Pose`s traversed by a `Move`
-steps :: Pose -> Move -> (Pose, [Pose])
-steps Pose { position, heading } Move { turn, dist } =
+steps :: Pose -> Move -> [Pose]
+steps Pose { position = (x, y), heading } Move { turn, dist } =
     let heading' = rotate turn heading
-        mkStep   = step heading' position
-        allSteps = (\x -> Pose { position = x, heading = heading'}) <$>
-            [ mkStep i | i <- [1..dist] ]
-    in (head allSteps, allSteps)
+        step i = case heading' of
+            North -> (x, y + i)
+            South -> (x, y - i)
+            East  -> (x + i, y)
+            West  -> (x - i, y)
+    in reverse $ (\x -> Pose { position = x, heading = heading'}) <$> [step i | i <- [1..dist] ]
 
+allSteps :: [Move] -> [Pose]
+allSteps = foldl (\p m -> steps (head p) m <> p) [initial]
+    where initial = Pose { position = (0, 0), heading = North }
 
 rotate :: Direction -> Heading -> Heading
 rotate R West = North
@@ -76,24 +75,33 @@ rotate L h = pred h
 taxiDist :: Num a => Point a -> a
 taxiDist (x, y) = abs x + abs y
 
-firstRepeat :: Ord a => [a] -> Maybe a
+firstRepeat :: Ord a => [a] -> a
 firstRepeat = firstRepeat' Set.empty
-    where firstRepeat' set (x:xs) = if Set.member x set then Just x
-                                    else firstRepeat' (Set.insert x set) xs
-          firstRepeat' _ []       = Nothing
+    where firstRepeat' seen (x:xs) = if Set.member x seen then x
+                                    else firstRepeat' (Set.insert x seen) xs
+        --   firstRepeat' _ []       = Nothing
 
-flatten :: [[a]] -> [a]
-flatten xs = (\z n -> foldr (flip (foldr z)) n xs) (:) []
-
-main :: IO ()
-main = do
+day1 :: IO ()
+day1 = do
     string <- getLine
-    let moves = (read . takeWhile notComma) <$> words string
+    let moves = position <$> allSteps ((read . takeWhile notComma) <$> words string)
     print "Solution 1:"
-    (print . taxiDist . position) . foldl move initial $ moves
+    print . taxiDist $ head moves
     print "Solution 2:"
-    (print . taxiDist . firstRepeat) . fmap position $ flatten (snd (mapAccumR steps initial moves))
-    where initial = Pose { position = (0, 0), heading = North }
-          notComma = (',' /= )
-        --   moveFromStr ('R':xs) = Move { turn = R, dist = read xs}
-        --   moveFromStr ('L':xs) = Move { turn = L, dist = read xs}
+    (print . taxiDist) . firstRepeat $ reverse moves
+    where notComma = (',' /= )
+
+-- solve1 :: []
+--
+-- main :: IO ()
+-- main = do
+--     string <- getLine
+--
+--     let initial
+--     print "Solution 1:"
+--     (print . taxiDist . position) .
+--     print "Solution 2:"
+--     (print . taxiDist . firstRepeat) . fmap position $ flatten (snd (mapAccumR steps initial moves))
+--
+--         --   moveFromStr ('R':xs) = Move { turn = R, dist = read xs}
+--         --   moveFromStr ('L':xs) = Move { turn = L, dist = read xs}
