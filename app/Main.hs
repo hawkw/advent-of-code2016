@@ -4,4 +4,8 @@ import Lib
 import System.Environment (getArgs)
 
 main :: IO ()
-main = someFunc
+main = do
+    num <- getArgs
+    case num of
+        ["1"] -> day1
+        _ -> undefined
