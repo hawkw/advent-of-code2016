@@ -1,4 +1,5 @@
 {-# LANGUAGE NamedFieldPuns #-}
+module Day1 where
 {-
     --- Day 1: No Time for a Taxicab ---
 

@@ -1,6 +1,5 @@
 module Lib
-    ( someFunc
+    ( module Day
     ) where
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+import Day1 as Day
