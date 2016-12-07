@@ -75,10 +75,11 @@ rotate L h = pred h
 taxiDist :: Num a => Point a -> a
 taxiDist (x, y) = abs x + abs y
 
-firstRepeat :: Ord a => [a] -> a
+firstRepeat :: Ord a => [a] -> Maybe a
 firstRepeat = firstRepeat' Set.empty
-    where firstRepeat' set (x:xs) = if Set.member x set then x
+    where firstRepeat' set (x:xs) = if Set.member x set then Just x
                                     else firstRepeat' (Set.insert x set) xs
+          firstRepeat' _ []       = Nothing
 
 flatten :: [[a]] -> [a]
 flatten xs = (\z n -> foldr (flip (foldr z)) n xs) (:) []
