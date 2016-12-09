@@ -9,4 +9,5 @@ main = do
     case num of
         ["1"] -> day1
         ["2"] -> day2
+        ["3"] -> day3
         _ -> undefined
