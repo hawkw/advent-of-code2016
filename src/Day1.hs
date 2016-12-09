@@ -1,5 +1,5 @@
 {-# LANGUAGE NamedFieldPuns #-}
-module Day1 where
+module Day1 (day1) where
 {-
     --- Day 1: No Time for a Taxicab ---
 
@@ -19,77 +19,78 @@ module Day1 where
     destination?
 
 -}
-import Data.List
-import Data.Monoid
-import qualified Data.Set as Set
+    import Util (getInput)
+    import Data.List
+    import Data.Monoid
+    import qualified Data.Set as Set
 
-type Point a = (a, a)
+    type Point a = (a, a)
 
-data Heading = North | East | South | West
-               deriving (Eq, Show, Enum, Ord, Bounded)
+    data Heading = North | East | South | West
+                   deriving (Eq, Show, Enum, Ord, Bounded)
 
-data Direction = L | R
-                 deriving (Eq, Show, Read)
+    data Direction = L | R
+                     deriving (Eq, Show, Read)
 
-data Pose = Pose { position :: !(Point Integer)
-                 , heading  :: !Heading }
-                 deriving (Eq, Show)
+    data Pose = Pose { position :: !(Point Integer)
+                     , heading  :: !Heading }
+                     deriving (Eq, Show)
 
-data Move = Move { turn :: !Direction
-                 , dist :: !Integer }
-                 deriving (Eq, Show)
+    data Move = Move { turn :: !Direction
+                     , dist :: !Integer }
+                     deriving (Eq, Show)
 
-instance Read Move where
-    readsPrec _ ('L':rest) = [(Move { turn = L, dist = read rest }, "")]
-    readsPrec _ ('R':rest) = [(Move { turn = R, dist = read rest }, "")]
-    readsPrec _ _          = []
+    instance Read Move where
+        readsPrec _ ('L':rest) = [(Move { turn = L, dist = read rest }, "")]
+        readsPrec _ ('R':rest) = [(Move { turn = R, dist = read rest }, "")]
+        readsPrec _ _          = []
 
--- | Returns the `Pose` at the end of a `Move`
--- move :: Pose -> Move -> Pose
--- move Pose { position, heading } Move { turn, dist } =
---     let heading' = rotate turn heading
---     in Pose { position = step heading' position dist, heading = heading' }
+    -- | Returns the `Pose` at the end of a `Move`
+    -- move :: Pose -> Move -> Pose
+    -- move Pose { position, heading } Move { turn, dist } =
+    --     let heading' = rotate turn heading
+    --     in Pose { position = step heading' position dist, heading = heading' }
 
--- | Returns the list of all `Pose`s traversed by a `Move`
-steps :: Pose -> Move -> [Pose]
-steps Pose { position = (x, y), heading } Move { turn, dist } =
-    let heading' = rotate turn heading
-        step i = case heading' of
-            North -> (x, y + i)
-            South -> (x, y - i)
-            East  -> (x + i, y)
-            West  -> (x - i, y)
-    in reverse $ (\x -> Pose { position = x, heading = heading'}) <$> [step i | i <- [1..dist] ]
+    -- | Returns the list of all `Pose`s traversed by a `Move`
+    steps :: Pose -> Move -> [Pose]
+    steps Pose { position = (x, y), heading } Move { turn, dist } =
+        let heading' = rotate turn heading
+            step i = case heading' of
+                North -> (x, y + i)
+                South -> (x, y - i)
+                East  -> (x + i, y)
+                West  -> (x - i, y)
+        in reverse $ (\x -> Pose { position = x, heading = heading'}) <$> [step i | i <- [1..dist] ]
 
-allSteps :: [Move] -> [Pose]
-allSteps = foldl (\p m -> steps (head p) m <> p) [initial]
-    where initial = Pose { position = (0, 0), heading = North }
+    allSteps :: [Move] -> [Pose]
+    allSteps = foldl (\p m -> steps (head p) m <> p) [initial]
+        where initial = Pose { position = (0, 0), heading = North }
 
-rotate :: Direction -> Heading -> Heading
-rotate R West = North
-rotate R h = succ h
-rotate L North = West
-rotate L h = pred h
+    rotate :: Direction -> Heading -> Heading
+    rotate R West = North
+    rotate R h = succ h
+    rotate L North = West
+    rotate L h = pred h
 
--- | Compute the "taxicab distance" between a position and the origin
-taxiDist :: Num a => Point a -> a
-taxiDist (x, y) = abs x + abs y
+    -- | Compute the "taxicab distance" between a position and the origin
+    taxiDist :: Num a => Point a -> a
+    taxiDist (x, y) = abs x + abs y
 
-firstRepeat :: Ord a => [a] -> a
-firstRepeat = firstRepeat' Set.empty
-    where firstRepeat' seen (x:xs) = if Set.member x seen then x
-                                    else firstRepeat' (Set.insert x seen) xs
-        --   firstRepeat' _ []       = Nothing
+    firstRepeat :: Ord a => [a] -> a
+    firstRepeat = firstRepeat' Set.empty
+        where firstRepeat' seen (x:xs) = if Set.member x seen then x
+                                        else firstRepeat' (Set.insert x seen) xs
+            --   firstRepeat' _ []       = Nothing
 
-day1 :: IO ()
-day1 = do
-    string <- getLine
-    let moves = position <$> allSteps ((read . takeWhile notComma) <$> words string)
-    print "Solution 1:"
-    print . taxiDist $ head moves
-    print "Solution 2:"
-    (print . taxiDist) . firstRepeat $ reverse moves
-    where notComma = (',' /= )
+    day1 :: IO ()
+    day1 = do
+        string <- getInput "day1"
+        let moves = position <$> allSteps ((read . takeWhile notComma) <$> words string)
+        print "Solution 1:"
+        print . taxiDist $ head moves
+        print "Solution 2:"
+        (print . taxiDist) . firstRepeat $ reverse moves
+        where notComma = (',' /= )
 
 -- solve1 :: []
 --
