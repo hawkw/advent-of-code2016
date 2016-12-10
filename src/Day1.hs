@@ -89,7 +89,7 @@ module Day1 (day1) where
         putStr "Solution 1:"
         print . taxiDist $ head moves
         putStr "Solution 2:"
-        (putStrLn . taxiDist) . firstRepeat $ reverse moves
+        (print . taxiDist) . firstRepeat $ reverse moves
         where notComma = (',' /= )
 
 -- solve1 :: []
