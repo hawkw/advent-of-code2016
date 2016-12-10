@@ -74,7 +74,7 @@ module Day1 (day1) where
 
     -- | Compute the "taxicab distance" between a position and the origin
     taxiDist :: Num a => Point a -> a
-    taxiDist (x, y) = abs x + abs y
+    taxiDist = uncurry ((. abs) . (+) . abs)
 
     firstRepeat :: Ord a => [a] -> a
     firstRepeat = firstRepeat' Set.empty
@@ -86,10 +86,10 @@ module Day1 (day1) where
     day1 = do
         string <- getInput "day1"
         let moves = position <$> allSteps ((read . takeWhile notComma) <$> words string)
-        print "Solution 1:"
+        putStr "Solution 1:"
         print . taxiDist $ head moves
-        print "Solution 2:"
-        (print . taxiDist) . firstRepeat $ reverse moves
+        putStr "Solution 2:"
+        (putStrLn . taxiDist) . firstRepeat $ reverse moves
         where notComma = (',' /= )
 
 -- solve1 :: []
