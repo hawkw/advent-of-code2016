@@ -45,4 +45,4 @@ module Day4( day4 ) where
         print . sum $ (sectorID <$> filter isValid rooms)
         putStrLn "Solution 2:"
         -- print . filter ("north pole" `isPrefixOf`) $ decrypt <$> rooms
-        mapM_ putStrLn $ decrypt <$> rooms
+        print . filter ("north" `isPrefixOf`) $ decrypt <$> rooms
